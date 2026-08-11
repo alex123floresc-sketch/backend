@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Claude Code (estado local, no del proyecto) ###
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
