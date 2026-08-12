@@ -1,6 +1,7 @@
 package com.unaj.project.controller.api;
 
 import com.unaj.project.dto.AlumnoForm;
+import com.unaj.project.dto.AsistenciaResumenAlumnoDTO;
 import com.unaj.project.dto.api.AlumnoDTO;
 import com.unaj.project.dto.api.AlumnoRequest;
 import com.unaj.project.dto.api.MatriculaDTO;
@@ -14,6 +15,7 @@ import com.unaj.project.model.Pago;
 import com.unaj.project.repository.MatriculaRepository;
 import com.unaj.project.repository.PagoRepository;
 import com.unaj.project.service.AlumnoService;
+import com.unaj.project.service.AsistenciaService;
 import com.unaj.project.service.MatriculaService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -43,13 +45,21 @@ public class AlumnoApiController {
     private final PagoRepository pagoRepository;
     private final MatriculaRepository matriculaRepository;
     private final MatriculaService matriculaService;
+    private final AsistenciaService asistenciaService;
 
     public AlumnoApiController(AlumnoService alumnoService, PagoRepository pagoRepository,
-                               MatriculaRepository matriculaRepository, MatriculaService matriculaService) {
+                               MatriculaRepository matriculaRepository, MatriculaService matriculaService,
+                               AsistenciaService asistenciaService) {
         this.alumnoService = alumnoService;
         this.pagoRepository = pagoRepository;
         this.matriculaRepository = matriculaRepository;
         this.matriculaService = matriculaService;
+        this.asistenciaService = asistenciaService;
+    }
+
+    @GetMapping("/{id}/asistencia")
+    public AsistenciaResumenAlumnoDTO asistencia(@PathVariable Long id, @RequestParam(required = false) Long cicloId) {
+        return asistenciaService.resumenPorAlumno(id, cicloId);
     }
 
     @GetMapping

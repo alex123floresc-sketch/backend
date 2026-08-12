@@ -93,6 +93,16 @@ public class ApiSecurityConfig {
                         .requestMatchers("/api/perfil/**").authenticated()
                         .requestMatchers("/api/busqueda/**").authenticated()
 
+                        // Bloque 3b: horarios, asistencias, horas docentes
+                        .requestMatchers(HttpMethod.POST, "/api/horarios/bloques").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/horarios/bloques/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/horarios/asignar").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/horarios/*").hasRole("ADMIN")
+                        .requestMatchers("/api/horarios/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers("/api/asistencias/**").hasAnyRole("ADMIN", "AUXILIAR")
+                        .requestMatchers("/api/horas-docentes/pagos").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers("/api/horas-docentes/**").hasAnyRole("ADMIN", "CAJERO", "AUXILIAR")
+
                         // El resto de la API requiere estar autenticado
                         .anyRequest().authenticated()
                 )
