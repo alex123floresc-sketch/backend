@@ -30,6 +30,9 @@ public class CrearBloqueRequest {
     @NotBlank(message = "El área/grado es obligatorio")
     private String area;
 
+    /** Solo aplica cuando nivel = PREUNIVERSITARIO. */
+    private Long salonId;
+
     public Long getCicloId() { return cicloId; }
     public void setCicloId(Long cicloId) { this.cicloId = cicloId; }
 
@@ -50,4 +53,7 @@ public class CrearBloqueRequest {
 
     public String getArea() { return area; }
     public void setArea(String area) { this.area = area; }
+
+    public Long getSalonId() { return salonId; }
+    public void setSalonId(Long salonId) { this.salonId = salonId; }
 }

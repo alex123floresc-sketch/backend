@@ -1,14 +1,18 @@
 package com.unaj.project.config;
 
 import com.unaj.project.security.JwtAuthenticationFilter;
+import com.unaj.project.service.impl.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,22 +23,21 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Cadena de seguridad SOLO para la API REST (/api/**) que consume Angular.
- * Es stateless (sin sesión) y se autentica con JWT en cada petición.
- *
- * Tiene @Order(1) para evaluarse ANTES que la cadena de Thymeleaf (SecurityConfig, @Order(2)),
- * de modo que el resto de la app server-rendered sigue funcionando igual con login por formulario.
+ * Cadena de seguridad para la API REST (/api/**). Es stateless (sin sesión) y se autentica
+ * con JWT en cada petición.
  */
 @Configuration
 public class ApiSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
-    public ApiSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public ApiSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsServiceImpl userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -109,6 +112,20 @@ public class ApiSecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder builder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder());
+        return builder.build();
     }
 
     @Bean

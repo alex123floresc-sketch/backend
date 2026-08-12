@@ -51,8 +51,9 @@ public class HorarioApiController {
     }
 
     @GetMapping("/grilla")
-    public Map<String, Object> grilla(@RequestParam Long cicloId, @RequestParam Nivel nivel, @RequestParam String area) {
-        Map<Turno, List<FilaHorarioDTO>> grilla = horarioService.agruparParaGrilla(cicloId, nivel, area);
+    public Map<String, Object> grilla(@RequestParam Long cicloId, @RequestParam Nivel nivel, @RequestParam String area,
+                                       @RequestParam(required = false) Long salonId) {
+        Map<Turno, List<FilaHorarioDTO>> grilla = horarioService.agruparParaGrilla(cicloId, nivel, area, salonId);
 
         Map<String, Object> porTurno = new LinkedHashMap<>();
         long totalBloques = 0;
@@ -84,7 +85,7 @@ public class HorarioApiController {
     @PostMapping("/bloques")
     public void crearBloque(@Valid @RequestBody CrearBloqueRequest req) {
         horarioService.crearBloque(req.getCicloId(), req.getNivel(), req.getTurno(),
-                req.getHoraInicio(), req.getHoraFin(), req.getTipo(), req.getArea());
+                req.getHoraInicio(), req.getHoraFin(), req.getTipo(), req.getArea(), req.getSalonId());
     }
 
     @DeleteMapping("/bloques/{bloqueId}")

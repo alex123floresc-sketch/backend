@@ -3,6 +3,10 @@ server:
   servlet:
     session:
       timeout: 60m
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   datasource:
@@ -28,19 +32,12 @@ spring:
       ddl-auto: update
     show-sql: ${SHOW_SQL:true}
 
-  thymeleaf:
-    prefix: classpath:/templates/
-    suffix: .html
-    mode: HTML
-    cache: ${THYMELEAF_CACHE:false}
-    encoding: UTF-8
-
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
 
-# Configuración JWT para la API REST (Angular)
+# Configuración JWT para la API REST
 app:
   jwt:
     # Clave secreta Base64 de al menos 256 bits. En producción, sobreescribe con la variable JWT_SECRET.
@@ -48,5 +45,5 @@ app:
     # Duración del token en milisegundos (por defecto 8 horas)
     expiration-ms: ${JWT_EXPIRATION_MS:28800000}
   cors:
-    # Orígenes del frontend Angular permitidos (separados por coma)
+    # Orígenes del frontend permitidos que consumen la API (separados por coma)
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}

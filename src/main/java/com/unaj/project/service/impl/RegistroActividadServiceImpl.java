@@ -23,7 +23,7 @@ public class RegistroActividadServiceImpl implements RegistroActividadService {
             "Alumnos", "Cursos", "Profesores", "Ciclos", "Matrículas", "Pagos",
             "Horarios", "Áreas", "Configuración", "Horas docentes", "Usuarios", "Sesión", "Sedes",
             "Preguntas frecuentes", "Testimonios", "Resultados de ingreso", "Galería de fotos",
-            "Calendario académico", "Solicitudes de información", "Proceso de admisión");
+            "Calendario académico", "Solicitudes de información", "Proceso de admisión", "Salones");
 
     private final RegistroActividadRepository repository;
 
@@ -67,7 +67,7 @@ public class RegistroActividadServiceImpl implements RegistroActividadService {
 
     @Override
     public List<RegistroActividad> actividadReciente() {
-        return repository.findTop8ByUsernameNotOrderByFechaDesc(USERNAME_DESARROLLADOR);
+        return repository.findTop8ByUsernameNotAndAccionNotOrderByFechaDesc(USERNAME_DESARROLLADOR, TipoAccion.LOGIN);
     }
 
     @Override

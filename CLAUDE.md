@@ -2,9 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**This repo is the pure REST API backend only.** It was synced from the fullstack `Academia-` repo (which has the Thymeleaf server-rendered UI, PDF/Excel reports, and dashboard charts) and then had the entire presentation layer stripped out: `src/main/resources/templates/`, `src/main/resources/static/`, every MVC `@Controller` (only `controller/api/**` remains), the form-login `SecurityConfig` (only the stateless JWT `ApiSecurityConfig` remains), and the Thymeleaf/flying-saucer-pdf/POI/JFreeChart/zxing dependencies along with the services that only existed to feed them (`PdfGeneradorService`, `ChartImageService`, `QrCodeService`). Model/repository/service logic and `dto/*Form` classes were kept as-is (several are still shared internally by the API controllers, e.g. `AlumnoApiController` builds an `AlumnoForm` under the hood). Sections below that describe Thymeleaf templates, list/grid view toggles, searchable pickers, PDF/Excel reports, or the dashboard chart describe the sibling `Academia-` repo, not this one — treat those as historical/reference only unless re-verified against the code here.
+
 ## Project overview
 
-"Sistema de matrículas - Lapreplus" — a server-rendered Spring Boot 3.5 / Java 21 web app for managing student enrollment at an academy: students (`Alumno`), teachers (`Profesor`), courses (`Curso`), academic terms (`Ciclo`), schedules (`Horario`), enrollments (`Matricula`/`MatriculaDetalle`), and payments (`Pago`). UI text, domain names, and messages are in Spanish.
+"Sistema de matrículas - Lapreplus" — a Spring Boot 3.5 / Java 21 REST API backend for managing student enrollment at an academy: students (`Alumno`), teachers (`Profesor`), courses (`Curso`), academic terms (`Ciclo`), schedules (`Horario`), enrollments (`Matricula`/`MatriculaDetalle`), and payments (`Pago`). UI text, domain names, and messages are in Spanish. Authentication is stateless JWT (`controller/api/AuthApiController`, `security/JwtService`, `security/JwtAuthenticationFilter`) enforced by `config/ApiSecurityConfig`.
 
 Lapreplus operates three **niveles** (`model/Nivel.java`: `PRIMARIA`, `SECUNDARIA`, `PREUNIVERSITARIO`) as fully independent branches — separate docentes, alumnos, cursos, and horarios — that happen to share one thing: `Ciclo` (the academic term) is a single shared concept across all three, not per-nivel. See "Niveles" below for the full design; this superseded the original single-línea-de-negocio model where `Areas.TODAS` (Ingenierías/Biomédicas/Sociales) were the only classification that existed.
 
@@ -13,7 +15,7 @@ Lapreplus operates three **niveles** (`model/Nivel.java`: `PRIMARIA`, `SECUNDARI
 This is a Maven project; use the wrapper (no need for a local Maven install).
 
 ```
-./mvnw spring-boot:run          # run the app (listens on port 9094)
+./mvnw spring-boot:run          # run the app (listens on port 9091)
 ./mvnw clean package            # build a jar (target/*.jar)
 ./mvnw test                     # run all tests
 ./mvnw test -Dtest=ClassName    # run a single test class
@@ -22,9 +24,9 @@ This is a Maven project; use the wrapper (no need for a local Maven install).
 
 On Windows use `mvnw.cmd` instead of `./mvnw` if not running under Git Bash/PowerShell wrapper resolution.
 
-There is essentially one test currently (`ProjectApplicationTests`, a Spring context-load smoke test), so `spring-boot:run` plus manual verification in the browser is the primary way changes get checked. When verifying changes yourself, prefer actually starting the app (e.g. on a spare `PORT`) and driving it with `curl` through a login + the affected routes rather than only running `mvnw compile` — several past regressions were template-only (Thymeleaf expression errors) that `compile` can't catch.
+There is essentially one test currently (`ProjectApplicationTests`, a Spring context-load smoke test), so `spring-boot:run` plus manual verification is the primary way changes get checked. When verifying changes yourself, prefer actually starting the app (e.g. on a spare `PORT`) and driving it with `curl` through `/api/auth/login` + the affected `/api/**` routes rather than only running `mvnw compile` — bean-wiring regressions (missing `@Bean`, e.g. `ApiSecurityConfig`'s `PasswordEncoder`/`AuthenticationManager`) only surface at startup, not at compile time.
 
-**Database**: requires a running MySQL instance. `src/main/resources/application.yml` reads connection details from environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `PORT`, `SHOW_SQL`, `THYMELEAF_CACHE`), each with a local-dev default baked in (`jdbc:mysql://localhost:3306/Academia`, user `root`) so `./mvnw spring-boot:run` works out of the box locally; override the env vars for any other environment. `spring.jpa.hibernate.ddl-auto: update`, so schema evolves automatically from entity changes; there are no migration scripts (no Flyway/Liquibase) — see the `model/` note below for what that means in practice. On first run, `DataInitializer` seeds three roles (`ROLE_ADMIN`, `ROLE_CAJERO`, `ROLE_AUXILIAR`) and three users (`admin`/`admin123`, `cajero`/`cajero123`, `auxiliar`/`auxiliar123`) if they don't already exist.
+**Database**: requires a running MySQL instance. `src/main/resources/application.yml` reads connection details from environment variables (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `PORT`, `SHOW_SQL`, `JWT_SECRET`, `JWT_EXPIRATION_MS`, `CORS_ORIGINS`), each with a local-dev default baked in (`jdbc:mysql://localhost:3306/Academia`, user `root`) so `./mvnw spring-boot:run` works out of the box locally; override the env vars for any other environment. `spring.jpa.hibernate.ddl-auto: update`, so schema evolves automatically from entity changes; there are no migration scripts (no Flyway/Liquibase) — see the `model/` note below for what that means in practice. On first run, `DataInitializer` seeds three roles (`ROLE_ADMIN`, `ROLE_CAJERO`, `ROLE_AUXILIAR`) and three users (`admin`/`admin123`, `cajero`/`cajero123`, `auxiliar`/`auxiliar123`) if they don't already exist.
 
 ## Architecture
 
