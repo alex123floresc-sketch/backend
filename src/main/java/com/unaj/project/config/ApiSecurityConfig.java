@@ -87,6 +87,12 @@ public class ApiSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/matriculas/*/anular").hasRole("ADMIN")
                         .requestMatchers("/api/matriculas/**").hasAnyRole("ADMIN", "CAJERO")
 
+                        // Bloque 3a: usuarios, perfil, historial, búsqueda
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/actividad/**").hasRole("ADMIN")
+                        .requestMatchers("/api/perfil/**").authenticated()
+                        .requestMatchers("/api/busqueda/**").authenticated()
+
                         // El resto de la API requiere estar autenticado
                         .anyRequest().authenticated()
                 )
