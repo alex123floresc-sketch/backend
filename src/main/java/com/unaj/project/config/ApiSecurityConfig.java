@@ -71,6 +71,22 @@ public class ApiSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/cursos/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/cursos/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/cursos/**").hasAnyRole("ADMIN")
+
+                        // Núcleo académico (bloque 2) — mismo criterio de roles que SecurityConfig (Thymeleaf)
+                        .requestMatchers("/api/ciclos/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/profesores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/profesores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/profesores/**").hasRole("ADMIN")
+                        .requestMatchers("/api/profesores/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers("/api/areas/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers(HttpMethod.POST, "/api/alumnos/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers(HttpMethod.PUT, "/api/alumnos/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers(HttpMethod.DELETE, "/api/alumnos/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers("/api/alumnos/**").authenticated()
+                        .requestMatchers("/api/pagos/**").hasAnyRole("ADMIN", "CAJERO")
+                        .requestMatchers(HttpMethod.POST, "/api/matriculas/*/anular").hasRole("ADMIN")
+                        .requestMatchers("/api/matriculas/**").hasAnyRole("ADMIN", "CAJERO")
+
                         // El resto de la API requiere estar autenticado
                         .anyRequest().authenticated()
                 )
